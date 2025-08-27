@@ -1,45 +1,76 @@
-use crossterm::{
-    cursor, execute,
-    terminal::{Clear, ClearType},
-};
-
+use crossterm::{cursor::{self, Hide, Show}, queue, terminal::size};
 use std::io::{Write, stdout};
 
 pub trait Renderer {
-    fn clear(&self);
-    fn present(&mut self);
+    fn clear(&mut self);
+    fn present(&self);
     fn put_char(&mut self, x: usize, y: usize, ch: char);
+    fn width(&self) -> usize;
+    fn height(&self) -> usize;
 }
 
 pub struct TerminalRenderer {
-    buffer: Vec<(u16, u16, char)>,
+    width: usize,
+    height: usize,
+    screen: Vec<Vec<char>>,
 }
 
 impl TerminalRenderer {
     pub fn new() -> Self {
+        let (width, height) = size().unwrap();
+        let width = width as usize;
+        let height = height as usize;
+        let screen = vec![vec![' '; width]; height];
+
+
+        let _ = crossterm::execute!(stdout(), Hide);
         Self {
-            buffer: Vec::new(),
+            width,
+            height,
+            screen,
         }
     }
 }
 
+impl Drop for TerminalRenderer {
+    fn drop(&mut self) {
+        let _ = crossterm::execute!(stdout(), Show);
+    }
+}
+
 impl Renderer for TerminalRenderer {
-    fn clear(&self) {
-        let mut stdout = stdout();
-        execute!(stdout, Clear(ClearType::All), cursor::MoveTo(0, 0)).unwrap();
+    fn clear(&mut self) {
+        for row in &mut self.screen {
+            for ch in row.iter_mut() {
+                *ch = ' ';
+            }
+        }
     }
 
     fn put_char(&mut self, x: usize, y: usize, ch: char) {
-        self.buffer.push((x as u16, y as u16, ch));
+        if x < self.width && y < self.height {
+            self.screen[y][x] = ch;
+        }
     }
 
-    fn present(&mut self) {
+    fn present(&self) {
         let mut stdout = stdout();
-        for (x, y, ch) in &self.buffer {
-            execute!(stdout, cursor::MoveTo(*x, *y)).unwrap();
-            print!("{}", ch);
+
+        for (y, row) in self.screen.iter().enumerate() {
+            for (x, &ch) in row.iter().enumerate() {
+                queue!(stdout, cursor::MoveTo(x as u16, y as u16)).unwrap();
+                write!(stdout, "{}", ch).unwrap();
+            }
         }
+
         stdout.flush().unwrap();
-        self.buffer.clear(); // clear after presenting
+    }
+
+    fn width(&self) -> usize {
+        self.width
+    }
+
+    fn height(&self) -> usize {
+        self.height
     }
 }
