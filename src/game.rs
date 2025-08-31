@@ -1,25 +1,36 @@
 use std::{thread::sleep, time::{Duration, Instant}};
 
-use crate::{player::Player, renderer::Renderer};
+use crate::{controller::{InputController, Key}, player::Player, renderer::Renderer};
 
 pub struct Game {
+    running: bool,
     player: Player,
+    controller: InputController,
+    screen_width: usize,
+    screen_height: usize,
 }
 
 const FRAME_DURATION_IN_MS: Duration = Duration::from_millis(16);
 
 impl Game {
-    pub fn new() -> Self {
-        let player = Player::new(0,0);
-        Game{player}
+    pub fn new(screen_width: usize, screen_height: usize) -> Self {
+        let player = Player::new(screen_width.saturating_sub(2),screen_height / 2);
+        let controller = InputController::new();
+        Game{running: true, player, controller, screen_width, screen_height}
     }
 
-    pub fn run(&self, renderer: &mut impl Renderer) {
+    pub fn run(&mut self, renderer: &mut impl Renderer) {
+        self.running = true;
         loop {
+            if !self.running {
+                break;
+            }
+
             let frame_start = Instant::now();
 
-            self.render(renderer);
+            self.handle_input();
 
+            self.render(renderer);
             let elapsed = frame_start.elapsed();
             if elapsed < FRAME_DURATION_IN_MS {
                 sleep(FRAME_DURATION_IN_MS - elapsed);
@@ -27,9 +38,23 @@ impl Game {
         }
     }
 
+    pub fn handle_input(&mut self) {
+        self.controller.poll();
+
+        if self.controller.is_pressed(Key::Up) {
+            self.player.move_up();
+        }
+        if self.controller.is_pressed(Key::Down) {
+            self.player.move_down(self.screen_height);
+        }
+        if self.controller.is_pressed(Key::Quit) {
+            self.running = false;
+        }
+    }
+
     fn render(&self, renderer: &mut impl Renderer) {
         renderer.clear();
-        renderer.put_char(self.player.x, self.player.y, '@');
+        self.player.draw(renderer);
         renderer.present();
     }
 }

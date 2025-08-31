@@ -22,7 +22,6 @@ impl TerminalRenderer {
         let height = height as usize;
         let screen = vec![vec![' '; width]; height];
 
-
         let _ = crossterm::execute!(stdout(), Hide);
         Self {
             width,
