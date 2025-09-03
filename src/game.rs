@@ -10,7 +10,7 @@ pub struct Game {
     screen_height: usize,
 }
 
-const FRAME_DURATION_IN_MS: Duration = Duration::from_millis(16);
+const FRAME_DURATION_IN_MS: Duration = Duration::from_millis(33);
 
 impl Game {
     pub fn new(screen_width: usize, screen_height: usize) -> Self {
@@ -41,14 +41,15 @@ impl Game {
     pub fn handle_input(&mut self) {
         self.controller.poll();
 
-        if self.controller.is_pressed(Key::Up) {
-            self.player.move_up();
-        }
-        if self.controller.is_pressed(Key::Down) {
-            self.player.move_down(self.screen_height);
-        }
-        if self.controller.is_pressed(Key::Quit) {
+        if self.controller.should_exit() {
             self.running = false;
+            return
+        }
+
+        match self.controller.direction() {
+            Key::Up => self.player.move_up(),
+            Key::Down => self.player.move_down(self.screen_height),
+            _ => {},
         }
     }
 

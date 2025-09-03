@@ -1,39 +1,44 @@
-use std::collections::HashSet;
-use crossterm::event::{poll, read, Event, KeyCode};
+use crossterm::event::{Event, KeyCode, poll, read};
 use std::time::Duration;
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash)]
 pub enum Key {
     Up,
     Down,
+    Stop,
     Quit,
 }
 
 pub struct InputController {
-    pressed: HashSet<Key>,
+    current: Key,
 }
 
 impl InputController {
     pub fn new() -> Self {
-        Self { pressed: HashSet::new() }
+        Self {
+            current: Key::Stop,
+        }
     }
 
     pub fn poll(&mut self) {
-        self.pressed.clear();
-
         if poll(Duration::from_millis(0)).unwrap() {
             if let Event::Key(key_event) = read().unwrap() {
                 match key_event.code {
-                    KeyCode::Up => { self.pressed.insert(Key::Up); }
-                    KeyCode::Down => { self.pressed.insert(Key::Down); }
-                    KeyCode::Char('q') => { self.pressed.insert(Key::Quit); }
+                    KeyCode::Up | KeyCode::Char('w') => self.current = Key::Up,
+                    KeyCode::Down | KeyCode::Char('s') => self.current = Key::Down,
+                    KeyCode::Char(' ') => self.current = Key::Stop,
+                    KeyCode::Char('q') => self.current = Key::Quit,
                     _ => {}
                 }
             }
         }
     }
 
-    pub fn is_pressed(&self, key: Key) -> bool {
-        self.pressed.contains(&key)
+    pub fn direction(&self) -> Key {
+        self.current
+    }
+
+    pub fn should_exit(&self) -> bool {
+        self.current == Key::Quit
     }
 }
