@@ -1,9 +1,9 @@
 use crate::renderer::Renderer;
 
 pub struct Player {
-    x: usize,
-    y: usize,
-    height: usize,
+    pub x: usize,
+    pub y: usize,
+    pub height: usize,
 }
 
 impl Player {
@@ -30,5 +30,12 @@ impl Player {
         if self.y + self.height / 2 < screen_height - 1 {
             self.y += 1;
         }
+    }
+ 
+    pub fn collides(&self, x: usize, y: usize) -> bool {
+        let start = self.y.saturating_sub(self.height / 2);
+        let end = self.y + self.height / 2;
+
+        x == self.x && (start..=end).contains(&y)
     }
 }

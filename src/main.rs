@@ -5,6 +5,7 @@ use crate::renderer::TerminalRenderer;
 
 mod game;
 mod player;
+mod ball;
 mod renderer;
 mod controller;
 

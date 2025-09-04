@@ -1,0 +1,51 @@
+use crate::{player::Player, renderer::Renderer};
+
+pub struct Ball {
+    pub x: f32,
+    pub y: f32,
+    v_x: f32,
+    v_y: f32,
+}
+
+impl Ball {
+    pub fn new(x: usize, y: usize) -> Self {
+        Self {
+            x: x as f32,
+            y: y as f32,
+            v_x: 1.0,
+            v_y: 0.0,
+        }
+    }
+
+    pub fn draw(&self, renderer: &mut impl Renderer) {
+        renderer.put_char(self.x.round() as usize, self.y.round() as usize, '*');
+    }
+
+    pub fn update(&mut self, screen_height: usize) {
+        self.apply_velocity();
+
+        if self.is_at_edges(screen_height) {
+            self.bounce();
+        }
+    }
+
+    pub fn bounce_from_paddle(&mut self, paddle: &Player) {
+        self.v_x = -self.v_x;
+
+        let relative_y = (self.y as f32 - paddle.y as f32) / (paddle.height as f32 / 2.0);
+        self.v_y = relative_y * self.v_x.abs() as f32;
+    }
+
+    fn apply_velocity(&mut self) {
+        self.x += self.v_x;
+        self.y += self.v_y;
+    }
+
+    fn is_at_edges(&self, screen_height: usize) -> bool {
+        self.y <= 0.0 || self.y >= screen_height as f32
+    }
+
+    fn bounce(&mut self) {
+        self.v_y = -self.v_y
+    }
+}

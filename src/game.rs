@@ -1,10 +1,12 @@
 use std::{thread::sleep, time::{Duration, Instant}};
 
-use crate::{controller::{InputController, Key}, player::Player, renderer::Renderer};
+use crate::{ball::Ball, controller::{InputController, Key}, player::Player, renderer::Renderer};
 
 pub struct Game {
     running: bool,
     player: Player,
+    enemy_player: Player,
+    ball: Ball,
     controller: InputController,
     screen_width: usize,
     screen_height: usize,
@@ -15,8 +17,10 @@ const FRAME_DURATION_IN_MS: Duration = Duration::from_millis(33);
 impl Game {
     pub fn new(screen_width: usize, screen_height: usize) -> Self {
         let player = Player::new(screen_width.saturating_sub(2),screen_height / 2);
+        let enemy_player = Player::new(2,screen_height / 2);
+        let ball = Ball::new(screen_width / 2, screen_height / 2);
         let controller = InputController::new();
-        Game{running: true, player, controller, screen_width, screen_height}
+        Game{running: true, player, enemy_player, ball, controller, screen_width, screen_height}
     }
 
     pub fn run(&mut self, renderer: &mut impl Renderer) {
@@ -29,6 +33,13 @@ impl Game {
             let frame_start = Instant::now();
 
             self.handle_input();
+            self.ball.update(self.screen_height);
+
+            for paddle in &[&self.player, &self.enemy_player] {
+                if paddle.collides(self.ball.x as usize, self.ball.y as usize) {
+                    self.ball.bounce_from_paddle(paddle);
+                }
+            }
 
             self.render(renderer);
             let elapsed = frame_start.elapsed();
@@ -56,6 +67,8 @@ impl Game {
     fn render(&self, renderer: &mut impl Renderer) {
         renderer.clear();
         self.player.draw(renderer);
+        self.enemy_player.draw(renderer);
+        self.ball.draw(renderer);
         renderer.present();
     }
 }
