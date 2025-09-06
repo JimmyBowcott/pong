@@ -41,6 +41,14 @@ impl Game {
                 }
             }
 
+            if self.ball.at_left_edge() {
+                self.ball.reset(self.screen_width, self.screen_height);
+            }
+
+            if self.ball.at_right_edge(self.screen_width) {
+                self.ball.reset(self.screen_width, self.screen_height);
+            }
+
             self.render(renderer);
             let elapsed = frame_start.elapsed();
             if elapsed < FRAME_DURATION_IN_MS {

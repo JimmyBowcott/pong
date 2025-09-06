@@ -36,6 +36,21 @@ impl Ball {
         self.v_y = relative_y * self.v_x.abs() as f32;
     }
 
+    pub fn reset(&mut self, screen_width: usize, screen_height: usize) {
+        self.x = (screen_width / 2) as f32;
+        self.y = (screen_height / 2) as f32;
+        self.v_x = 1.0;
+        self.v_y = 0.0;
+    }
+
+    pub fn at_left_edge(&self) -> bool {
+        self.x.round() == 0.0
+    }
+
+    pub fn at_right_edge(&self, screen_width: usize) -> bool {
+        self.x.round() >= screen_width as f32
+    }
+
     fn apply_velocity(&mut self) {
         self.x += self.v_x;
         self.y += self.v_y;
