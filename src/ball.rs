@@ -1,4 +1,5 @@
 use crate::{player::Player, renderer::Renderer};
+use rand::random;
 
 pub struct Ball {
     pub x: f32,
@@ -13,7 +14,7 @@ impl Ball {
             x: x as f32,
             y: y as f32,
             v_x: 1.0,
-            v_y: 0.0,
+            v_y: random::<f32>() * 0.3,
         }
     }
 
@@ -39,8 +40,8 @@ impl Ball {
     pub fn reset(&mut self, screen_width: usize, screen_height: usize) {
         self.x = (screen_width / 2) as f32;
         self.y = (screen_height / 2) as f32;
-        self.v_x = 1.0;
-        self.v_y = 0.0;
+        self.v_x = self.v_x.abs();
+        self.v_y = random::<f32>() * 0.3;
     }
 
     pub fn at_left_edge(&self) -> bool {
@@ -64,7 +65,11 @@ impl Ball {
     }
 
     pub fn is_near(&self, x: usize) -> bool {
-        (self.x - x as f32).abs() < 25.0
+        (self.x - x as f32).abs() < 55.0
+    }
+
+    pub fn accelerate(&mut self) {
+        self.v_x *= 1.01;
     }
 
     fn apply_velocity(&mut self) {

@@ -28,8 +28,8 @@ impl Game {
         Game {
             running: true,
             score: 0,
-            player: Player::new(screen_width.saturating_sub(2), screen_height / 2),
-            enemy_player: Player::new(2, screen_height / 2),
+            player: Player::new(screen_width.saturating_sub(2), screen_height / 2, 0.75),
+            enemy_player: Player::new(2, screen_height / 2, 0.5),
             ball: Ball::new(screen_width / 2, screen_height / 2),
             controller: InputController::new(),
             screen_width,
@@ -45,6 +45,7 @@ impl Game {
             }
 
             let frame_start = Instant::now();
+            let mut ball_hit = false;
 
             self.handle_input();
             self.move_enemy();
@@ -53,7 +54,13 @@ impl Game {
             for paddle in &[&self.player, &self.enemy_player] {
                 if paddle.collides(self.ball.x as usize, self.ball.y as usize) {
                     self.ball.bounce_from_paddle(paddle);
+                    ball_hit = true;
                 }
+            }
+
+            if ball_hit {
+                self.enemy_player.accelerate();
+                self.ball.accelerate();
             }
 
             if self.ball.at_left_edge() {
@@ -89,7 +96,7 @@ impl Game {
     }
 
     fn move_enemy(&mut self) {
-        if self.ball.is_moving_to(self.enemy_player.x) && self.ball.is_near(self.enemy_player.x) {
+        if self.ball.is_moving_to(self.enemy_player.x()) && self.ball.is_near(self.enemy_player.x()) {
             let target_y = self.predict_ball_y();
             self.enemy_move_toward(target_y);
         }
@@ -112,11 +119,9 @@ impl Game {
     }
 
     fn enemy_move_toward(&mut self, target_y: f32) {
-        let speed = 0.5;
-
-        if self.enemy_player.y as f32 + speed < target_y {
+        if self.enemy_player.y as f32 + self.enemy_player.move_speed() < target_y {
             self.enemy_player.move_down(self.screen_height);
-        } else if self.enemy_player.y as f32 - speed > target_y {
+        } else if self.enemy_player.y as f32 - self.enemy_player.move_speed() > target_y {
             self.enemy_player.move_up();
         }
     }
