@@ -51,6 +51,22 @@ impl Ball {
         self.x.round() >= screen_width as f32
     }
 
+    pub fn is_moving_to(&self, x: usize) -> bool {
+       self.x > (x as f32) && self.v_x < 0.0 || self.x < (x as f32) && self.v_x > 0.0
+    }
+ 
+    pub fn v_x(&self) -> f32 {
+        self.v_x
+    }
+
+    pub fn v_y(&self) -> f32 {
+        self.v_y
+    }
+
+    pub fn is_near(&self, x: usize) -> bool {
+        (self.x - x as f32).abs() < 25.0
+    }
+
     fn apply_velocity(&mut self) {
         self.x += self.v_x;
         self.y += self.v_y;

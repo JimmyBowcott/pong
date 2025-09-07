@@ -1,5 +1,6 @@
 use std::{
-    thread::sleep, time::{Duration, Instant}
+    thread::sleep,
+    time::{Duration, Instant},
 };
 
 use crate::{
@@ -46,6 +47,7 @@ impl Game {
             let frame_start = Instant::now();
 
             self.handle_input();
+            self.move_enemy();
             self.ball.update(self.screen_height);
 
             for paddle in &[&self.player, &self.enemy_player] {
@@ -83,6 +85,39 @@ impl Game {
             Key::Up => self.player.move_up(),
             Key::Down => self.player.move_down(self.screen_height),
             _ => {}
+        }
+    }
+
+    fn move_enemy(&mut self) {
+        if self.ball.is_moving_to(self.enemy_player.x) && self.ball.is_near(self.enemy_player.x) {
+            let target_y = self.predict_ball_y();
+            self.enemy_move_toward(target_y);
+        }
+    }
+
+    fn predict_ball_y(&self) -> f32 {
+        let distance_x = (self.enemy_player.x as f32 - self.ball.x) / self.ball.v_x();
+        let mut target_y = self.ball.y + self.ball.v_y() * distance_x;
+
+        while target_y < 0.0 || target_y > self.screen_height as f32 {
+            if target_y < 0.0 {
+                target_y = -target_y;
+            }
+            if target_y > self.screen_height as f32 {
+                target_y = 2.0 * self.screen_height as f32 - target_y;
+            }
+        }
+
+        target_y
+    }
+
+    fn enemy_move_toward(&mut self, target_y: f32) {
+        let speed = 0.5;
+
+        if self.enemy_player.y as f32 + speed < target_y {
+            self.enemy_player.move_down(self.screen_height);
+        } else if self.enemy_player.y as f32 - speed > target_y {
+            self.enemy_player.move_up();
         }
     }
 
