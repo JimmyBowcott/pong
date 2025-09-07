@@ -5,6 +5,7 @@ pub trait Renderer {
     fn clear(&mut self);
     fn present(&self);
     fn put_char(&mut self, x: usize, y: usize, ch: char);
+    fn draw_text(&mut self, text: &str, x: usize, y: usize);
     fn width(&self) -> usize;
     fn height(&self) -> usize;
 }
@@ -49,6 +50,16 @@ impl Renderer for TerminalRenderer {
     fn put_char(&mut self, x: usize, y: usize, ch: char) {
         if x < self.width && y < self.height {
             self.screen[y][x] = ch;
+        }
+    }
+
+    fn draw_text(&mut self, text: &str, x: usize, y: usize) {
+        if y >= self.height { return; }
+
+        for (i, ch) in text.chars().enumerate() {
+            let px = x + i;
+            if px >= self.width { break; }
+            self.screen[y][px] = ch;
         }
     }
 
