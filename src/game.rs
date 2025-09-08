@@ -21,15 +21,15 @@ pub struct Game {
     screen_height: usize,
 }
 
-const FRAME_DURATION_IN_MS: Duration = Duration::from_millis(33);
+const FRAME_DURATION_IN_MS: Duration = Duration::from_millis(16);
 
 impl Game {
     pub fn new(screen_width: usize, screen_height: usize) -> Self {
         Game {
             running: true,
             score: 0,
-            player: Player::new(screen_width.saturating_sub(2), screen_height / 2, 0.75),
-            enemy_player: Player::new(2, screen_height / 2, 0.5),
+            player: Player::new(screen_width.saturating_sub(2), screen_height / 2, 0.325),
+            enemy_player: Player::new(2, screen_height / 2, 0.25),
             ball: Ball::new(screen_width / 2, screen_height / 2),
             controller: InputController::new(),
             screen_width,
@@ -49,14 +49,15 @@ impl Game {
 
             self.handle_input();
             self.move_enemy();
-            self.ball.update(self.screen_height);
 
             for paddle in &[&self.player, &self.enemy_player] {
-                if paddle.collides(self.ball.x as usize, self.ball.y as usize) {
+                if paddle.collides(&self.ball) {
                     self.ball.bounce_from_paddle(paddle);
                     ball_hit = true;
                 }
             }
+
+            self.ball.update(self.screen_height);
 
             if ball_hit {
                 self.enemy_player.accelerate();
@@ -128,9 +129,9 @@ impl Game {
 
     fn render(&self, renderer: &mut impl Renderer) {
         renderer.clear();
+        self.ball.draw(renderer);
         self.player.draw(renderer);
         self.enemy_player.draw(renderer);
-        self.ball.draw(renderer);
         self.draw_score(renderer);
         renderer.present();
     }

@@ -45,11 +45,11 @@ impl Ball {
     }
 
     pub fn at_left_edge(&self) -> bool {
-        self.x.round() == 0.0
+        self.x == 0.0
     }
 
     pub fn at_right_edge(&self, screen_width: usize) -> bool {
-        self.x.round() >= screen_width as f32
+        self.x.round() > screen_width as f32
     }
 
     pub fn is_moving_to(&self, x: usize) -> bool {
@@ -69,7 +69,11 @@ impl Ball {
     }
 
     pub fn accelerate(&mut self) {
-        self.v_x *= 1.01;
+        self.v_x += 0.1;
+    }
+
+    pub fn next_position(&self) -> (f32, f32) {
+        (self.x + self.v_x, self.y + self.v_y)
     }
 
     fn apply_velocity(&mut self) {

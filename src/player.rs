@@ -1,4 +1,4 @@
-use crate::renderer::Renderer;
+use crate::{ball::Ball, renderer::Renderer};
 
 pub struct Player {
     pub x: f32,
@@ -38,11 +38,23 @@ impl Player {
         }
     }
 
-    pub fn collides(&self, x: usize, y: usize) -> bool {
-        let start = (self.y.round() as usize).saturating_sub(self.height / 2);
-        let end = self.y.round() as usize + self.height / 2;
+    pub fn collides(&self, ball: &Ball) -> bool {
+        let (next_x, next_y) = ball.next_position();
 
-        x as f32 == self.x && (start..=end).contains(&y)
+        let min_x = ball.x.min(next_x);
+        let max_x = ball.x.max(next_x);
+        let min_y = ball.y.min(next_y);
+        let max_y = ball.y.max(next_y);
+
+        let paddle_top = self.y - self.height as f32 / 2.0;
+        let paddle_bottom = self.y + self.height as f32 / 2.0;
+        let paddle_left = self.x as f32;
+        let paddle_right = self.x as f32;
+
+        max_x >= paddle_left &&
+        min_x <= paddle_right &&
+        max_y >= paddle_top &&
+        min_y <= paddle_bottom
     }
 
     pub fn move_speed(&self) -> f32 {
@@ -54,6 +66,6 @@ impl Player {
     }
 
     pub fn accelerate(&mut self) {
-        self.move_speed *= 1.01;
+        self.move_speed += 0.1;
     }
 }
