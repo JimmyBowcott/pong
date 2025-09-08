@@ -22,7 +22,7 @@ impl Player {
         let end = self.y.round() as usize + self.height / 2;
 
         for row in start..=end {
-            renderer.put_char(self.x.round() as usize, row, '|');
+            renderer.put_char(self.x.round() as usize, row, '█');
         }
     }
 

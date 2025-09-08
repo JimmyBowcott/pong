@@ -13,13 +13,13 @@ impl Ball {
         Self {
             x: x as f32,
             y: y as f32,
-            v_x: 1.0,
-            v_y: random::<f32>() * 0.3,
+            v_x: 0.5,
+            v_y: random::<f32>() * 0.15,
         }
     }
 
     pub fn draw(&self, renderer: &mut impl Renderer) {
-        renderer.put_char(self.x.round() as usize, self.y.round() as usize, '*');
+        renderer.put_char(self.x.round() as usize, self.y.round() as usize, '⬤');
     }
 
     pub fn update(&mut self, screen_height: usize) {
